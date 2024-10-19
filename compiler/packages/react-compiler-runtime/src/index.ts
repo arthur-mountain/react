@@ -68,7 +68,7 @@ const LazyGuardDispatcher: {[key: string]: (...args: Array<any>) => any} = {};
   LazyGuardDispatcher[name] = () => {
     throw new Error(
       `[React] Unexpected React hook call (${name}) from a React compiled function. ` +
-        "Check that all hooks are called directly and named according to convention ('use[A-Z]') ",
+        "Check that all hooks are called directly and named according to convention ('^use') ",
     );
   };
 });
