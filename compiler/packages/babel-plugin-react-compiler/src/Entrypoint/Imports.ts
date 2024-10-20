@@ -170,7 +170,7 @@ function addMemoCacheFunctionSpecifierToExistingImport(
 export function updateMemoCacheFunctionImport(
   program: NodePath<t.Program>,
   moduleName: string,
-  useMemoCacheIdentifier: string,
+  useMemoCacheIdentifierName: string,
 ): void {
   /*
    * If there isn't already an import of * as React, insert it so useMemoCache doesn't
@@ -185,7 +185,7 @@ export function updateMemoCacheFunctionImport(
     const didUpdateImport = addMemoCacheFunctionSpecifierToExistingImport(
       program,
       moduleName,
-      useMemoCacheIdentifier,
+      useMemoCacheIdentifierName,
     );
     if (!didUpdateImport) {
       throw new Error(
@@ -196,7 +196,7 @@ export function updateMemoCacheFunctionImport(
     addMemoCacheFunctionImportDeclaration(
       program,
       moduleName,
-      useMemoCacheIdentifier,
+      useMemoCacheIdentifierName,
     );
   }
 }
@@ -204,12 +204,17 @@ export function updateMemoCacheFunctionImport(
 function addMemoCacheFunctionImportDeclaration(
   program: NodePath<t.Program>,
   moduleName: string,
-  localName: string,
+  useMemoCacheIdentifierName: string,
 ): void {
   program.unshiftContainer(
     'body',
     t.importDeclaration(
-      [t.importSpecifier(t.identifier(localName), t.identifier('c'))],
+      [
+        t.importSpecifier(
+          t.identifier(useMemoCacheIdentifierName),
+          t.identifier('c'),
+        ),
+      ],
       t.stringLiteral(moduleName),
     ),
   );
