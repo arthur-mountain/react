@@ -108,19 +108,27 @@ function isNonNamespacedImport(
   );
 }
 
+const SKIP_TRAVERSAL = new Error('__SKIP_TRAVERSAL__');
 function hasExistingNonNamespacedImportOfModule(
   program: NodePath<t.Program>,
   moduleName: string,
 ): boolean {
   let hasExistingImport = false;
-  program.traverse({
-    ImportDeclaration(importDeclPath) {
-      if (isNonNamespacedImport(importDeclPath, moduleName)) {
-        hasExistingImport = true;
-      }
-    },
-  });
-
+  try {
+    program.traverse({
+      ImportDeclaration(importDeclPath) {
+        if (isNonNamespacedImport(importDeclPath, moduleName)) {
+          hasExistingImport = true;
+          throw SKIP_TRAVERSAL;
+        }
+      },
+    });
+  } catch (error) {
+    const skipFoundExistingImportError = error === SKIP_TRAVERSAL;
+    if (!skipFoundExistingImportError) {
+      throw error;
+    }
+  }
   return hasExistingImport;
 }
 
@@ -134,20 +142,28 @@ function addMemoCacheFunctionSpecifierToExistingImport(
   identifierName: string,
 ): boolean {
   let didInsertUseMemoCache = false;
-  program.traverse({
-    ImportDeclaration(importDeclPath) {
-      if (
-        !didInsertUseMemoCache &&
-        isNonNamespacedImport(importDeclPath, moduleName)
-      ) {
-        importDeclPath.pushContainer(
-          'specifiers',
-          t.importSpecifier(t.identifier(identifierName), t.identifier('c')),
-        );
-        didInsertUseMemoCache = true;
-      }
-    },
-  });
+  try {
+    program.traverse({
+      ImportDeclaration(importDeclPath) {
+        if (
+          !didInsertUseMemoCache &&
+          isNonNamespacedImport(importDeclPath, moduleName)
+        ) {
+          importDeclPath.pushContainer(
+            'specifiers',
+            t.importSpecifier(t.identifier(identifierName), t.identifier('c')),
+          );
+          didInsertUseMemoCache = true;
+          throw SKIP_TRAVERSAL;
+        }
+      },
+    });
+  } catch (error) {
+    const skipFoundExistingImportError = error === SKIP_TRAVERSAL;
+    if (!skipFoundExistingImportError) {
+      throw error;
+    }
+  }
   return didInsertUseMemoCache;
 }
 
