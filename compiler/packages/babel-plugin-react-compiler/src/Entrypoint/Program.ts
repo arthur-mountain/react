@@ -1063,18 +1063,15 @@ function checkFunctionReferencedBeforeDeclarationAtTopLevel(
   );
   const fnNames = new Map([...fnIds].map(id => [id.name, id]));
   const errors = new CompilerError();
+  const SKIP_CHECK_FUNC_TYPE_NODES = [
+    'TypeAnnotation',
+    'TSTypeAnnotation',
+    'TypeAlias',
+    'TSTypeAliasDeclaration',
+  ].join('|');
 
   program.traverse({
-    TypeAnnotation(path) {
-      path.skip();
-    },
-    TSTypeAnnotation(path) {
-      path.skip();
-    },
-    TypeAlias(path) {
-      path.skip();
-    },
-    TSTypeAliasDeclaration(path) {
+    [SKIP_CHECK_FUNC_TYPE_NODES](path) {
       path.skip();
     },
     Identifier(id) {
